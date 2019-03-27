@@ -6,7 +6,7 @@ import { join } from 'path';
 type configValueType = boolean | string | undefined;
 
 interface IConfig {
-    [key: string]: configValueType;
+    [key: string]: configValueType | IConfig;
 }
 
 export class Configurator {
@@ -51,10 +51,11 @@ export class Configurator {
         // Read the config file from the config folder in the project root directory
         const configFilePath = join(this.configFolder, `${ configName }.ini`);
         Configurator.debug(`Adding config file: ${configFilePath}.`);
+
+        let configEntries;
         try {
-            const configEntries = parse(readFileSync(configFilePath, 'utf-8'));
-            Object.assign(this.config, configEntries);
-            Configurator.debug(`Config loaded:: ${configFilePath}.`);
+            configEntries = parse(readFileSync(configFilePath, 'utf-8'));
+
         } catch (error) {
             if (error.code === 'ENOENT') {
                 process.emitWarning(`Config file '${configFilePath}' not found, attempting to create from template.`);
@@ -65,21 +66,53 @@ export class Configurator {
                 throw error;
             }
         }
+
+        // Check if a value is going to be overwritten.
+        this.checkForOverwrittenValues(configEntries);
+
+        Object.assign(this.config, configEntries);
+        Configurator.debug(`Config loaded: ${configFilePath}.`);
+    }
+
+    private checkForOverwrittenValues(configEntries: IConfig) {
+        for (const configEntry in configEntries) {
+            if (configEntries.hasOwnProperty(configEntry)) {
+                if (this.config[configEntry] !== undefined) {
+                    // console.log(configEntry, typeof this.config[configEntry]);
+                }
+
+                // if (typeof this.config[configEntry] === 'object') {
+                //
+                // }
+            }
+
+            // if (configEntries.hasOwnProperty(configEntry) && this.config[configEntry]) {
+            //     const oldValue = this.config[configEntry];
+            //     const newValue = configEntries[configEntry];
+            //
+            //     let warning = `Config property '${configEntry}' is being overwritten in ${configName}.ini`;
+            //     warning += `, old value: '${oldValue}', new value: '${newValue}'`;
+            //     process.emitWarning(warning);
+            // }
+        }
     }
 
     private getPropertyFromPath(property: string): configValueType {
         // Load the root of the config first.
-        let propertyParts: any = this.config;
+        let config = this.config;
 
-        if (propertyParts.hasOwnProperty(property)) {
-            return propertyParts[property];
+        if (config.hasOwnProperty(property) && typeof config[property] !== 'object') {
+            return config[property] as configValueType;
         }
 
-        const propertyPath = property.split('.');
+        const propertyParts = property.split('.');
 
-        for (const part of propertyPath) {
-            if (propertyParts.hasOwnProperty(part)) {
-                propertyParts = propertyParts[part];
+        console.log('propertyPath', propertyParts, property, this.config);
+
+        for (const part of propertyParts) {
+            if (config.hasOwnProperty(part)) {
+                config = config[part] as IConfig;
+                console.log(propertyParts);
             } else {
                 return;
             }
