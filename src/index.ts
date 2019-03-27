@@ -3,11 +3,7 @@ import { copyFileSync, readFileSync } from 'fs';
 import { parse } from 'ini';
 import { join } from 'path';
 
-export const configFolder = 'config';
-
-// export let config: Configurator;
-
-type configValueType = boolean | number | string | undefined;
+type configValueType = boolean | string | undefined;
 
 interface IConfig {
     [key: string]: configValueType;
@@ -16,29 +12,15 @@ interface IConfig {
 export class Configurator {
 
     private static readonly debug = Debug('configurator');
-    private readonly config: IConfig = {};
+    public readonly config: IConfig = {};
+    private readonly configFolder: string;
 
-    constructor(...configNames: string[]) {
+    constructor(configFolder: string, ...configNames: string[]) {
+
+        this.configFolder = configFolder;
 
         for (const configName of configNames) {
             this.addConfigFile(configName);
-        }
-
-        // config = this;
-    }
-
-    /**
-     * Get a property from the config file
-     * @param {string} property - The name of the property to fetch
-     * @return {configValueType} - The value of the given config property
-     */
-    public getProperty(property: string): configValueType {
-        const propertyParts = property.split('.');
-        try {
-            return this.getPropertyFromPath(propertyParts);
-        } catch (error) {
-            // logger.warn(`Property '${property}' does not exist in the current configuration.`);
-            return;
         }
     }
 
@@ -48,11 +30,10 @@ export class Configurator {
      * @param {boolean | number | string} defaultValue - Default value to return if the property is not set.
      * @return {configValueType} - The value of the given config property
      */
-    public getProperty2(property: string, defaultValue: configValueType): configValueType {
-        const propertyParts = property.split('.');
-        const propertyFromPath = this.getPropertyFromPath(propertyParts);
+    public getProperty(property: string, defaultValue?: configValueType): configValueType {
+        const propertyFromPath = this.getPropertyFromPath(property);
 
-        if (propertyFromPath) {
+        if (propertyFromPath !== undefined) {
             return propertyFromPath;
         } else {
             Configurator.debug(`Property '${property}' does not exist in the current configuration, using default.`);
@@ -68,27 +49,34 @@ export class Configurator {
      */
     public addConfigFile(configName: string): void {
         // Read the config file from the config folder in the project root directory
-        const configFilePath = join(configFolder, `${ configName }.ini`);
+        const configFilePath = join(this.configFolder, `${ configName }.ini`);
         Configurator.debug(`Adding config file: ${configFilePath}.`);
         try {
-            console.log('START');
-            console.log(readFileSync(configFilePath, 'utf-8'));
-            console.log('END');
             const configEntries = parse(readFileSync(configFilePath, 'utf-8'));
             Object.assign(this.config, configEntries);
             Configurator.debug(`Config loaded:: ${configFilePath}.`);
         } catch (error) {
             if (error.code === 'ENOENT') {
                 process.emitWarning(`Config file '${configFilePath}' not found, attempting to create from template.`);
-                copyFileSync(join(configFolder, configName + '.template.ini'), configFilePath);
+                copyFileSync(join(this.configFolder, configName + '.template.ini'), configFilePath);
                 process.emitWarning(`Config file '${configFilePath}' created from template.`);
                 throw new Error('Adjust your new configuration file with correct settings!');
+            } else {
+                throw error;
             }
         }
     }
 
-    private getPropertyFromPath(propertyPath: string[]): configValueType {
+    private getPropertyFromPath(property: string): configValueType {
+        // Load the root of the config first.
         let propertyParts: any = this.config;
+
+        if (propertyParts[property]) {
+            return propertyParts[property];
+        }
+
+        const propertyPath = property.split('.');
+
         for (const part of propertyPath) {
             propertyParts = propertyParts[part];
         }
