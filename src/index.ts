@@ -71,14 +71,18 @@ export class Configurator {
         // Load the root of the config first.
         let propertyParts: any = this.config;
 
-        if (propertyParts[property]) {
+        if (propertyParts.hasOwnProperty(property)) {
             return propertyParts[property];
         }
 
         const propertyPath = property.split('.');
 
         for (const part of propertyPath) {
-            propertyParts = propertyParts[part];
+            if (propertyParts.hasOwnProperty(part)) {
+                propertyParts = propertyParts[part];
+            } else {
+                return;
+            }
         }
         return propertyParts;
     }
