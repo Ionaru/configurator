@@ -33,9 +33,14 @@ export class Configurator {
         return result.map((path) => path.substr(1));
     }
 
-    public readonly config: IConfig = {};
+    private readonly config: IConfig = {};
     private readonly configFolder: string;
 
+    /**
+     * Create a new Configurator instance.
+     * @param {string} configFolder - The folder where the configuration files are.
+     * @param {string[]} configNames - An optional list of configuration file names to load immediately.
+     */
     constructor(configFolder: string, ...configNames: string[]) {
 
         this.configFolder = configFolder;
