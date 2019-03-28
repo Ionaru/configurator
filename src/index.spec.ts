@@ -1,13 +1,5 @@
 /* tslint:disable:no-duplicate-string no-identical-functions */
 
-// Load config file on construct.
-// global config variable?
-// Warning when overwriting config values.
-// Multiple config files.
-// Property paths.
-// Automatic config generation?
-// Default values.
-
 import { Configurator } from './index';
 
 jest.mock('fs');
@@ -25,26 +17,40 @@ function throwReadFileSyncOutput(throwable: any) {
 }
 
 describe('Loading config files', () => {
-    test('something', () => {
+
+    let warningSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+        warningSpy = jest.spyOn(process, 'emitWarning');
+    });
+
+    afterEach(() => {
+        warningSpy.mockClear();
+    });
+
+    test('Loading a config file', () => {
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('', 'config');
         expect(config).toBeTruthy();
     });
 
-    test('Config file not found', () => {
+    test('Attempting to load a non-existing config file', () => {
         throwReadFileSyncOutput({code: 'ENOENT'});
 
         expect(() => {
             new Configurator('', 'no-config');
         }).toThrow('Adjust your new configuration file with correct settings!');
+
+        expect(warningSpy).toHaveBeenCalledWith('Config file \'no-config.ini\' not found, attempting to create from template.');
+        expect(warningSpy).toHaveBeenCalledWith('Config file \'no-config.ini\' created from template.');
     });
 
-    test('Other error while reading / parsing', () => {
+    test('Other error while reading / parsing config file', () => {
         throwReadFileSyncOutput(new Error('🐛'));
 
         expect(() => {
-            new Configurator('', 'no-config');
+            new Configurator('', 'broken-config');
         }).toThrow('🐛');
     });
 });
@@ -108,6 +114,17 @@ describe('Loading config values', () => {
 });
 
 describe('Multiple config files', () => {
+
+    let warningSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+        warningSpy = jest.spyOn(process, 'emitWarning');
+    });
+
+    afterEach(() => {
+        warningSpy.mockClear();
+    });
+
     test('Load two config files', () => {
         const config = new Configurator('');
         setReadFileSyncOutput('key1 = value1');
@@ -127,6 +144,7 @@ describe('Multiple config files', () => {
         config.addConfigFile('configFile2');
 
         expect(config.getProperty('key1')).toBe('value2');
+        expect(warningSpy).toHaveBeenCalledWith('Config property \'key1\' is being overwritten in configFile2.ini');
     });
 
     test('Overwrite a config file key in same section', () => {
@@ -137,6 +155,8 @@ describe('Multiple config files', () => {
         config.addConfigFile('configFile2');
 
         expect(config.getProperty('section1.key1')).toBe('value2');
+
+        expect(warningSpy).toHaveBeenCalledWith('Config property \'section1.key1\' is being overwritten in configFile2.ini');
     });
 
     test('Overwrite a config file key in different section', () => {
@@ -148,6 +168,8 @@ describe('Multiple config files', () => {
 
         expect(config.getProperty('section1.key1')).toBe('value1');
         expect(config.getProperty('section2.key1')).toBe('value2');
+
+        expect(warningSpy).toHaveBeenCalledTimes(0);
     });
 });
 
