@@ -98,25 +98,11 @@ export class Configurator {
     }
 
     private getPropertyFromPath(property: string): configValueType {
-        // Load the root of the config first.
-        let config = this.config;
-
-        if (config.hasOwnProperty(property) && typeof config[property] !== 'object') {
-            return config[property] as configValueType;
+        if (this.config.hasOwnProperty(property) && typeof this.config[property] !== 'object') {
+            return this.config[property] as configValueType;
         }
 
         const propertyParts = property.split('.');
-
-        console.log('propertyPath', propertyParts, property, this.config);
-
-        for (const part of propertyParts) {
-            if (config.hasOwnProperty(part)) {
-                config = config[part] as IConfig;
-                console.log(propertyParts);
-            } else {
-                return;
-            }
-        }
-        return propertyParts;
+        return propertyParts.reduce((previous: any, current) => previous[current], this.config);
     }
 }
