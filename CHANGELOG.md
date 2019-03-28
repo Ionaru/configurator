@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Setup for this project
+- Initial code.
+- Setup for this project.
 
-[Unreleased]: https://github.com/Ionaru/configurator/compare/0.0.1...HEAD
+[Unreleased]: https://github.com/Ionaru/configurator/compare/90d398e...HEAD
