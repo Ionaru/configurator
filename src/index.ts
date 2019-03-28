@@ -42,9 +42,7 @@ export class Configurator {
 
         Configurator.debug(`Configurator created, folder: ${ configFolder }.`);
 
-        for (const configName of configNames) {
-            this.addConfigFile(configName);
-        }
+        this.addConfigFiles(configNames);
     }
 
     /**
@@ -69,7 +67,18 @@ export class Configurator {
     }
 
     /**
-     * Read the config from one of the config files and store the gotten values in this.config
+     * Read multiple config files and store the gotten values in the configuration.
+     * @param {string[]} configNames - The names of the configuration files to load.
+     */
+    public addConfigFiles(configNames: string[]): void {
+        for (const configName of configNames) {
+            this.addConfigFile(configName);
+        }
+    }
+
+    /**
+     * Read a config file and store the gotten values in the configuration.
+     * @param {string} configName - The name of the configuration file to load.
      */
     public addConfigFile(configName: string): void {
         if (configName.endsWith('.ini')) {
