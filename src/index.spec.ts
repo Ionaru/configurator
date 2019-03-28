@@ -1,5 +1,7 @@
 /* tslint:disable:no-duplicate-string no-identical-functions */
 
+import * as path from 'path';
+
 import { Configurator } from './index';
 
 jest.mock('fs');
@@ -19,20 +21,40 @@ function throwReadFileSyncOutput(throwable: any) {
 describe('Loading config files', () => {
 
     let warningSpy: jest.SpyInstance;
+    let joinSpy: jest.SpyInstance;
 
     beforeEach(() => {
         warningSpy = jest.spyOn(process, 'emitWarning');
+        joinSpy = jest.spyOn(path, 'join');
     });
 
     afterEach(() => {
         warningSpy.mockClear();
+        joinSpy.mockClear();
     });
 
-    test('Loading a config file', () => {
+    test('Loading a config file without .ini at the end', () => {
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('', 'config');
         expect(config).toBeTruthy();
+        expect(joinSpy).toHaveBeenCalledWith('', 'config.ini');
+    });
+
+    test('Loading a config file with .ini at the end', () => {
+        setReadFileSyncOutput('key = value');
+
+        const config = new Configurator('', 'config.ini');
+        expect(config).toBeTruthy();
+        expect(joinSpy).toHaveBeenCalledWith('', 'config.ini');
+    });
+
+    test('Loading a config file with a custom path', () => {
+        setReadFileSyncOutput('key = value');
+
+        const config = new Configurator('somePathToConfigFiles', 'config');
+        expect(config).toBeTruthy();
+        expect(joinSpy).toHaveBeenCalledWith('somePathToConfigFiles', 'config.ini');
     });
 
     test('Attempting to load a non-existing config file', () => {

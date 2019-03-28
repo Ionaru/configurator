@@ -72,6 +72,10 @@ export class Configurator {
      * Read the config from one of the config files and store the gotten values in this.config
      */
     public addConfigFile(configName: string): void {
+        if (configName.endsWith('.ini')) {
+            configName = configName.slice(0, -4);
+        }
+
         // Read the config file from the config folder in the project root directory
         const configFilePath = join(this.configFolder, `${ configName }.ini`);
         Configurator.debug(`Adding config file: ${ configFilePath }.`);
