@@ -4,3 +4,28 @@ node_js:
     - '10' # EOL: April 2021
     - '8' # EOL: December 2019
     - '6' # EOL: April 2019
+script:
+    - npm run test
+before_deploy:
+    - if [ "$TRAVIS_BRANCH" = master ] && [ "$TRAVIS_PULL_REQUEST" = false ]; then npm version prerelease --no-git-tag-version --preid "$TRAVIS_BUILD_NUMBER"; fi
+deploy:
+    - provider: npm
+      email: info@saturnserver.org
+      api_key:
+          secure: PAuZX+sMUBbsjXNeeqrt9xE4KiZFWZmbXebZOCC0jTucsh4m9Mr8Oom+e7UUFXd8bUg5gbRMjUzyoF8jofvtQt2K3JaHa2i0lORKpIMw+UcvhYrSMyudar6Z4sBNpkN6thcZzTsP3k7ybz1AwitgBibDPVnqUvgL5DG6RDb6QZawaW+wqhHGc2eU8zfgm470EAZaocqtBh+cJfS5bwksbJdcFbVdsqoNZtfrsbi8ap5/q8KTlQ6U5AUbLUu4GSSDr22aZOPH/3WxhmkHHP3rPEgqh0iJEe+r+m0wbeINjayFH5jRIkuiBf/ENp3SpS2oWG+wM/zydbYOERzXrKWfRqU1aihukVgSaZ/+HBSfGb2AFlDGHN2ss/xloy83XjAXR4I0A7N8447k099Ua1Q4I1aPd2Nu6nKPdfv/shzvRuWs4I4p96PIdCF6MD4s9Fe/8QqnzojCD4i8D7/+CxEf9wovXRSICGvqFfdb8aDKv5FOZy+xtZd+iXkoQBL+4MoDlASvcS9TJ8siJ+h5haSvEaHj5xXaO22DGuqfE45a3AxChJf4yW0Bcn3qyqYDi4y0PKB/VPM+pZaYYo2GWF/TUkh1M0RrrC3Jc2sE1/ndZuSCH5YROBLJYo8To8UbYrmwCjWTm8GVNQLRh1Y9bFw5Xx5HU0pkuB0Zzh2TUtQjFxI=
+      tag: next
+      skip_cleanup: true
+      on:
+          node: 10
+          branch: master
+          repo: Ionaru/configurator
+    - provider: npm
+      email: info@saturnserver.org
+      api_key:
+          secure: PAuZX+sMUBbsjXNeeqrt9xE4KiZFWZmbXebZOCC0jTucsh4m9Mr8Oom+e7UUFXd8bUg5gbRMjUzyoF8jofvtQt2K3JaHa2i0lORKpIMw+UcvhYrSMyudar6Z4sBNpkN6thcZzTsP3k7ybz1AwitgBibDPVnqUvgL5DG6RDb6QZawaW+wqhHGc2eU8zfgm470EAZaocqtBh+cJfS5bwksbJdcFbVdsqoNZtfrsbi8ap5/q8KTlQ6U5AUbLUu4GSSDr22aZOPH/3WxhmkHHP3rPEgqh0iJEe+r+m0wbeINjayFH5jRIkuiBf/ENp3SpS2oWG+wM/zydbYOERzXrKWfRqU1aihukVgSaZ/+HBSfGb2AFlDGHN2ss/xloy83XjAXR4I0A7N8447k099Ua1Q4I1aPd2Nu6nKPdfv/shzvRuWs4I4p96PIdCF6MD4s9Fe/8QqnzojCD4i8D7/+CxEf9wovXRSICGvqFfdb8aDKv5FOZy+xtZd+iXkoQBL+4MoDlASvcS9TJ8siJ+h5haSvEaHj5xXaO22DGuqfE45a3AxChJf4yW0Bcn3qyqYDi4y0PKB/VPM+pZaYYo2GWF/TUkh1M0RrrC3Jc2sE1/ndZuSCH5YROBLJYo8To8UbYrmwCjWTm8GVNQLRh1Y9bFw5Xx5HU0pkuB0Zzh2TUtQjFxI=
+      skip_cleanup: true
+      on:
+          node: 10
+          branch: master
+          tags: true
+          repo: Ionaru/configurator
