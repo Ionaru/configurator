@@ -24,7 +24,8 @@
         "collectCoverageFrom": [
             "src/**/*.ts",
             "!src/**/*.d.ts",
-            "!src/**/*.spec.ts"
+            "!src/**/*.spec.ts",
+            "!src/__mocks__/*.ts"
         ],
         "preset": "ts-jest",
         "testEnvironment": "node"
@@ -38,6 +39,7 @@
         "@types/ini": "^1.3.30",
         "@types/jest": "^24.0.11",
         "@types/node": "^11.12.0",
+        "codecov": "^3.2.0",
         "jest": "^24.5.0",
         "ts-jest": "^24.0.0",
         "tslint": "^5.14.0",
