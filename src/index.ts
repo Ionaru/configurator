@@ -13,7 +13,12 @@ export class Configurator {
 
     private static readonly debug = Debug('configurator');
 
-    private static getConfigPaths(config: IConfig) {
+    /**
+     * Create a list of the paths in an object.
+     * @param {IConfig} config - The config object to create the list from.
+     * @return {string[]} - The list of possible paths to properties.
+     */
+    private static getConfigPaths(config: IConfig): string[] {
         const result: string[] = [];
 
         const constructPropertyPaths = (data: IConfig | configValueType, path: string) => {
@@ -47,14 +52,14 @@ export class Configurator {
 
         Configurator.debug(`Configurator created, folder: ${ configFolder }.`);
 
-        this.addConfigFiles(configNames);
+        this.addConfigFiles(...configNames);
     }
 
     /**
      * Get a property from the config file
-     * @param {string} property - The name of the property to fetch
+     * @param {string} property - The name of the property to fetch.
      * @param {configValueType} defaultValue - Default value to return if the property is not set.
-     * @return {configValueType} - The value of the given config property
+     * @return {configValueType} - The value of the given config property.
      */
     public getProperty(property: string, defaultValue?: configValueType): configValueType {
         Configurator.debug(`Searching config for property: ${ property }`);
@@ -75,7 +80,7 @@ export class Configurator {
      * Read multiple config files and store the gotten values in the configuration.
      * @param {string[]} configNames - The names of the configuration files to load.
      */
-    public addConfigFiles(configNames: string[]): void {
+    public addConfigFiles(...configNames: string[]): void {
         for (const configName of configNames) {
             this.addConfigFile(configName);
         }
@@ -85,7 +90,7 @@ export class Configurator {
      * Read a config file and store the gotten values in the configuration.
      * @param {string} configName - The name of the configuration file to load.
      */
-    public addConfigFile(configName: string): void {
+    private addConfigFile(configName: string): void {
         if (configName.endsWith('.ini')) {
             configName = configName.slice(0, -4);
         }
@@ -122,14 +127,19 @@ export class Configurator {
         Configurator.debug(`Config loaded: ${ configFilePath }.`);
     }
 
-    private getPropertyFromPath(property: string): configValueType {
-        if (this.config.hasOwnProperty(property) && typeof this.config[property] !== 'object') {
-            return this.config[property] as configValueType;
+    /**
+     * Get a property value from a path.
+     * @param {string} path - The path where the property is located.
+     * @return {configValueType} - The value of the property.
+     */
+    private getPropertyFromPath(path: string): configValueType {
+        if (this.config.hasOwnProperty(path) && typeof this.config[path] !== 'object') {
+            return this.config[path] as configValueType;
         }
 
-        const propertyParts = property.split('.');
+        const pathParts = path.split('.');
         try {
-            return propertyParts.reduce((previous: any, current) => previous[current], this.config);
+            return pathParts.reduce((previous: any, current) => previous[current], this.config);
         } catch {
             return;
         }

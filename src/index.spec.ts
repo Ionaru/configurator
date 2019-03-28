@@ -6,9 +6,12 @@ import { Configurator } from './index';
 
 jest.mock('fs');
 
-function setReadFileSyncOutput(output: string) {
+function setReadFileSyncOutput(...output: string[]) {
+    let selected = 0;
     require('fs').readFileSync = () => {
-        return output;
+        const returnValue = output[selected];
+        selected++;
+        return returnValue;
     };
 }
 
@@ -147,12 +150,29 @@ describe('Multiple config files', () => {
         warningSpy.mockClear();
     });
 
-    test('Load two config files', () => {
+    test('Load two config files from the constructor', () => {
+        setReadFileSyncOutput('key1 = value1', 'key2 = value2');
+        const config = new Configurator('', 'configFile1', 'configFile2');
+
+        expect(config.getProperty('key1')).toBe('value1');
+        expect(config.getProperty('key2')).toBe('value2');
+    });
+
+    test('Load two config files at the same time', () => {
+        setReadFileSyncOutput('key1 = value1', 'key2 = value2');
+        const config = new Configurator('');
+        config.addConfigFiles('configFile1', 'configFile2');
+
+        expect(config.getProperty('key1')).toBe('value1');
+        expect(config.getProperty('key2')).toBe('value2');
+    });
+
+    test('Load two config files separately', () => {
         const config = new Configurator('');
         setReadFileSyncOutput('key1 = value1');
-        config.addConfigFile('configFile1');
+        config.addConfigFiles('configFile1');
         setReadFileSyncOutput('key2 = value2');
-        config.addConfigFile('configFile2');
+        config.addConfigFiles('configFile2');
 
         expect(config.getProperty('key1')).toBe('value1');
         expect(config.getProperty('key2')).toBe('value2');
@@ -161,9 +181,9 @@ describe('Multiple config files', () => {
     test('Overwrite a config file key', () => {
         const config = new Configurator('');
         setReadFileSyncOutput('key1 = value1');
-        config.addConfigFile('configFile1');
+        config.addConfigFiles('configFile1');
         setReadFileSyncOutput('key1 = value2');
-        config.addConfigFile('configFile2');
+        config.addConfigFiles('configFile2');
 
         expect(config.getProperty('key1')).toBe('value2');
         expect(warningSpy).toHaveBeenCalledWith('Config property \'key1\' is being overwritten in configFile2.ini');
@@ -172,9 +192,9 @@ describe('Multiple config files', () => {
     test('Overwrite a config file key in same section', () => {
         const config = new Configurator('');
         setReadFileSyncOutput('[section1]\n key1 = value1');
-        config.addConfigFile('configFile1');
+        config.addConfigFiles('configFile1');
         setReadFileSyncOutput('[section1]\n key1 = value2');
-        config.addConfigFile('configFile2');
+        config.addConfigFiles('configFile2');
 
         expect(config.getProperty('section1.key1')).toBe('value2');
 
@@ -184,9 +204,9 @@ describe('Multiple config files', () => {
     test('Overwrite a config file key in different section', () => {
         const config = new Configurator('');
         setReadFileSyncOutput('[section1]\n key1 = value1');
-        config.addConfigFile('configFile1');
+        config.addConfigFiles('configFile1');
         setReadFileSyncOutput('[section2]\n key1 = value2');
-        config.addConfigFile('configFile2');
+        config.addConfigFiles('configFile2');
 
         expect(config.getProperty('section1.key1')).toBe('value1');
         expect(config.getProperty('section2.key1')).toBe('value2');
