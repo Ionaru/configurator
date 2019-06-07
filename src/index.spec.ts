@@ -98,13 +98,13 @@ describe('Loading config values', () => {
         ['key', '5.05', 'key = 5.05'],
 
         // Boolean values.
-        ['key', true, 'key = true'],
-        ['key', false, 'key = false'],
+        ['key', true, 'key = true'] as any,
+        ['key', false, 'key = false'] as any,
 
         // Empty values.
         ['key', '', 'key ='],
         // tslint:disable-next-line:no-null-keyword
-        ['key', null, 'key = null'],
+        ['key', null, 'key = null'] as any,
 
         // Duplicate keys.
         ['key', '2', 'key = 1\n key = 2'],
