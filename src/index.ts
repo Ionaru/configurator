@@ -23,10 +23,8 @@ export class Configurator {
 
         const constructPropertyPaths = (data: IConfig | configValueType, path: string) => {
             if (data && typeof data === 'object') {
-                for (const property in data) {
-                    if (data.hasOwnProperty(property)) {
-                        constructPropertyPaths(data[property], `${ path }.${ property }`);
-                    }
+                for (const [key, value] of Object.entries(data)) {
+                    constructPropertyPaths(value, `${ path }.${ key }`);
                 }
             } else {
                 result.push(path);
