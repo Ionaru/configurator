@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dropped Node.js 8 support.
 - Dropped Node.js 11 support.
 
+### Fixed
+- Security vulnerability in devDependencies.
+
 ## [2.0.0] - 2019-06-07
 ### BREAKING CHANGES
 - Dropped Node.js 6 support.
