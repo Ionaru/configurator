@@ -1,27 +1,27 @@
-/* tslint:disable:no-duplicate-string no-identical-functions */
-
 import * as path from 'path';
 
 import { Configurator } from './index';
 
 jest.mock('fs');
 
-function setReadFileSyncOutput(...output: string[]) {
+const setReadFileSyncOutput = (...output: string[]) => {
     let selected = 0;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('fs').readFileSync = () => {
         const returnValue = output[selected];
         selected++;
         return returnValue;
     };
-}
+};
 
-function throwReadFileSyncOutput(throwable: any) {
+const throwReadFileSyncOutput = (throwable: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('fs').readFileSync = () => {
         throw throwable;
     };
-}
+};
 
-describe('Loading config files', () => {
+describe('loading config files', () => {
 
     let warningSpy: jest.SpyInstance;
     let joinSpy: jest.SpyInstance;
@@ -36,7 +36,9 @@ describe('Loading config files', () => {
         joinSpy.mockClear();
     });
 
-    test('Loading a config file without .ini at the end', () => {
+    it('loading a config file without .ini at the end', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('', 'config');
@@ -44,7 +46,9 @@ describe('Loading config files', () => {
         expect(joinSpy).toHaveBeenCalledWith('', 'config.ini');
     });
 
-    test('Loading a config file with .ini at the end', () => {
+    it('loading a config file with .ini at the end', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('', 'config.ini');
@@ -52,7 +56,9 @@ describe('Loading config files', () => {
         expect(joinSpy).toHaveBeenCalledWith('', 'config.ini');
     });
 
-    test('Loading a config file with a custom path', () => {
+    it('loading a config file with a custom path', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('somePathToConfigFiles', 'config');
@@ -60,8 +66,10 @@ describe('Loading config files', () => {
         expect(joinSpy).toHaveBeenCalledWith('somePathToConfigFiles', 'config.ini');
     });
 
-    test('Attempting to load a non-existing config file', () => {
-        throwReadFileSyncOutput({code: 'ENOENT'});
+    it('attempting to load a non-existing config file', () => {
+        expect.assertions(3);
+
+        throwReadFileSyncOutput({ code: 'ENOENT' });
 
         expect(() => {
             new Configurator('', 'no-config');
@@ -71,7 +79,9 @@ describe('Loading config files', () => {
         expect(warningSpy).toHaveBeenCalledWith('Config file \'no-config.ini\' created from template.');
     });
 
-    test('Other error while reading / parsing config file', () => {
+    it('other error while reading / parsing config file', () => {
+        expect.assertions(1);
+
         throwReadFileSyncOutput(new Error('🐛'));
 
         expect(() => {
@@ -80,8 +90,8 @@ describe('Loading config files', () => {
     });
 });
 
-describe('Loading config values', () => {
-    test.each([
+describe('loading config values', () => {
+    it.each([
 
         // String values.
         ['key', 'value', 'key = value'],
@@ -103,8 +113,8 @@ describe('Loading config values', () => {
 
         // Empty values.
         ['key', '', 'key ='],
-        // tslint:disable-next-line:no-null-keyword
-        ['key', null, 'key = null'] as any,
+        // eslint-disable-next-line no-null/no-null
+        ['key', null, 'key = null'],
 
         // Duplicate keys.
         ['key', '2', 'key = 1\n key = 2'],
@@ -113,15 +123,18 @@ describe('Loading config values', () => {
         ['section.key', 'value', '[section]\n key = value'],
         ['section.subsection.key', 'value', '[section.subsection]\n key = value'],
 
-    ])('Key %p, value %p', (key, value, iniContents) => {
+    ])('key %p, value %p', (key, value, iniContents) => {
+        expect.assertions(1);
 
-        setReadFileSyncOutput(iniContents as string);
+        setReadFileSyncOutput(iniContents);
         const config = new Configurator('', 'configFileName');
-        expect(config.getProperty(key as string)).toBe(value);
+        expect(config.getProperty(key)).toBe(value);
 
     });
 
-    test('Multiple sections', () => {
+    it('multiple sections', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput(`[section1]\nkeyInSection1 = true\n[section2]\nkeyInSection2 = A string value`);
 
         const config = new Configurator('', 'config');
@@ -129,7 +142,9 @@ describe('Loading config values', () => {
         expect(config.getProperty('section2.keyInSection2')).toBe('A string value');
     });
 
-    test('Multiple sections with the same name', () => {
+    it('multiple sections with the same name', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput(`[section1]\nkeyInSection1 = true\n[section1]\nkeyInSection2 = A string value`);
 
         const config = new Configurator('', 'config');
@@ -138,7 +153,7 @@ describe('Loading config values', () => {
     });
 });
 
-describe('Multiple config files', () => {
+describe('multiple config files', () => {
 
     let warningSpy: jest.SpyInstance;
 
@@ -150,7 +165,9 @@ describe('Multiple config files', () => {
         warningSpy.mockClear();
     });
 
-    test('Load two config files from the constructor', () => {
+    it('load two config files from the constructor', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput('key1 = value1', 'key2 = value2');
         const config = new Configurator('', 'configFile1', 'configFile2');
 
@@ -158,7 +175,9 @@ describe('Multiple config files', () => {
         expect(config.getProperty('key2')).toBe('value2');
     });
 
-    test('Load two config files at the same time', () => {
+    it('load two config files at the same time', () => {
+        expect.assertions(2);
+
         setReadFileSyncOutput('key1 = value1', 'key2 = value2');
         const config = new Configurator('');
         config.addConfigFiles('configFile1', 'configFile2');
@@ -167,7 +186,9 @@ describe('Multiple config files', () => {
         expect(config.getProperty('key2')).toBe('value2');
     });
 
-    test('Load two config files separately', () => {
+    it('load two config files separately', () => {
+        expect.assertions(2);
+
         const config = new Configurator('');
         setReadFileSyncOutput('key1 = value1');
         config.addConfigFiles('configFile1');
@@ -178,7 +199,9 @@ describe('Multiple config files', () => {
         expect(config.getProperty('key2')).toBe('value2');
     });
 
-    test('Overwrite a config file key', () => {
+    it('overwrite a config file key', () => {
+        expect.assertions(2);
+
         const config = new Configurator('');
         setReadFileSyncOutput('key1 = value1');
         config.addConfigFiles('configFile1');
@@ -189,7 +212,9 @@ describe('Multiple config files', () => {
         expect(warningSpy).toHaveBeenCalledWith('Config property \'key1\' is being overwritten in configFile2.ini');
     });
 
-    test('Overwrite a config file key in same section', () => {
+    it('overwrite a config file key in same section', () => {
+        expect.assertions(2);
+
         const config = new Configurator('');
         setReadFileSyncOutput('[section1]\n key1 = value1');
         config.addConfigFiles('configFile1');
@@ -201,7 +226,9 @@ describe('Multiple config files', () => {
         expect(warningSpy).toHaveBeenCalledWith('Config property \'section1.key1\' is being overwritten in configFile2.ini');
     });
 
-    test('Overwrite a config file key in different section', () => {
+    it('overwrite a config file key in different section', () => {
+        expect.assertions(3);
+
         const config = new Configurator('');
         setReadFileSyncOutput('[section1]\n key1 = value1');
         config.addConfigFiles('configFile1');
@@ -215,9 +242,11 @@ describe('Multiple config files', () => {
     });
 });
 
-describe('Default config values', () => {
+describe('default config values', () => {
 
-    test('No default value set', () => {
+    it('no default value set', () => {
+        expect.assertions(1);
+
         setReadFileSyncOutput('');
 
         const config = new Configurator('', 'config');
@@ -226,14 +255,18 @@ describe('Default config values', () => {
         }).toThrow('No value or default value for property keyName defined!');
     });
 
-    test('Return default value', () => {
+    it('return default value', () => {
+        expect.assertions(1);
+
         setReadFileSyncOutput('');
 
         const config = new Configurator('', 'config');
         expect(config.getProperty('key', 'defaultValue')).toBe('defaultValue');
     });
 
-    test('Return config value', () => {
+    it('return config value', () => {
+        expect.assertions(1);
+
         setReadFileSyncOutput('key = value');
 
         const config = new Configurator('', 'config');
