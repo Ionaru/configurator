@@ -9,6 +9,8 @@
         "dist/**/*"
     ],
     "scripts": {
+        "clean": "npx -q rimraf dist",
+        "prebuild": "npm run clean",
         "build": "tsc --project tsconfig.json",
         "lint": "npm run lint:src && npm run lint:test",
         "lint:src": "eslint --ext ts --max-warnings 0 --ignore-pattern *.spec.ts src",
