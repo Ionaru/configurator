@@ -15,7 +15,6 @@
         "lint:test": "eslint --ext ts --plugin jest --env jest/globals src/**/*.spec.ts",
         "pretest": "npm run lint",
         "test": "jest src",
-        "posttest": "codecov -f coverage/*.json",
         "prepare": "npm run build",
         "preversion": "npm run test"
     },
