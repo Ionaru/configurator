@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Node.js 18.
 - Support for Node.js 16.
 - Support for Node.js 14.
+- `Configurator.config` getter to inspect the raw configuration object.
 
 ## [3.0.0] - 2020-04-17
 ### BREAKING CHANGES

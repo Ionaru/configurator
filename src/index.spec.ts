@@ -273,3 +273,32 @@ describe('default config values', () => {
         expect(config.getProperty('key', 'defaultValue')).toBe('value');
     });
 });
+
+describe('get raw config', () => {
+
+    it('returns the raw config', () => {
+        expect.assertions(1);
+
+        setReadFileSyncOutput('key = value');
+        const config = new Configurator('', 'config');
+        expect(config.config.key).toBe('value');
+    });
+
+    it('cannot write to the raw config', () => {
+        expect.assertions(3);
+
+        setReadFileSyncOutput('key = value');
+        const config = new Configurator('', 'config');
+
+        const illegalWrite = () => {
+            // @ts-expect-error Config is readonly
+            config.config.key = 'newValue';
+        };
+
+        expect(illegalWrite).toThrow(TypeError);
+        expect(illegalWrite).toThrow("Cannot assign to read only property 'key' of object '#<Object>'");
+
+        expect(config.config.key).toBe('value');
+    });
+
+});
